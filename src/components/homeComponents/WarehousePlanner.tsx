@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import { Grid, Package2, Truck, X } from "lucide-react";
-import { Position, GridSize, Item, ItemType, ToolType} from '../../types'
+import { Forklift, Grid, Package2, Truck, Warehouse, X } from "lucide-react";
+import { Position, GridSize, Item, ItemType, ToolType } from "../../types";
 
 const WarehousePlanner: React.FC = () => {
   const [tileSize, setTileSize] = useState<number>(1);
-  const [gridSize] = useState<GridSize>({ width: 10, height: 10 });
+  const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 });
   const [selectedTool, setSelectedTool] = useState<ToolType>("shelf");
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
@@ -12,8 +12,8 @@ const WarehousePlanner: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   const itemTypes: Record<ToolType, ItemType> = {
-    shelf: { width: 2, height: 1, color: "bg-blue-500", icon: Package2 },
-    forklift: { width: 1, height: 1, color: "bg-yellow-500", icon: Truck },
+    shelf: { width: 1, height: 1, color: "bg-blue-500", icon: Package2 },
+    forklift: { width: 1, height: 1, color: "bg-yellow-500", icon: Forklift},
   };
 
   const checkOverlap = (item1: Item, item2: Item): boolean => {
@@ -79,8 +79,11 @@ const WarehousePlanner: React.FC = () => {
   };
 
   const handleTileClick = (x: number, y: number): void => {
+    console.log("get x and y =", x, y);
     if (selectedTool) {
+      console.log(selectedTool);
       const typeInfo = itemTypes[selectedTool];
+      console.log(typeInfo);
       const newItem: Item = {
         id: Date.now(),
         type: selectedTool,
@@ -88,6 +91,7 @@ const WarehousePlanner: React.FC = () => {
         y,
         ...typeInfo,
       };
+      console.log("newItem to add :", newItem);
 
       if (isValidPosition(newItem)) {
         setItems([...items, newItem]);
@@ -99,7 +103,7 @@ const WarehousePlanner: React.FC = () => {
 
   const handleItemClick = (clickedItem: Item, e: React.MouseEvent): void => {
     e.stopPropagation();
-
+    console.log("clicked at item", clickedItem);
     if (selectedItem) {
       if (selectedItem.id !== clickedItem.id) {
         const dist = calculateDistance(selectedItem, clickedItem);
@@ -118,7 +122,8 @@ const WarehousePlanner: React.FC = () => {
 
   const handleDeleteItem = (itemId: number, e: React.MouseEvent): void => {
     e.stopPropagation();
-    setItems(items.filter((item) => item.id !== itemId));
+    console.log("delete item clicked on item =", itemId);
+    setItems(items.filter((item) => item.id !== itemId)); // remove item from items array (filter what is not the Id)
     if (selectedItem?.id === itemId) {
       setSelectedItem(null);
       setDistance(null);
@@ -126,8 +131,11 @@ const WarehousePlanner: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center">
-      <div className="mb-4 flex gap-4 ">
+    <div className="flex flex-col items-center mx-2 lg:mx-0">
+      <div className="flex flex-col lg:flex-row items-center gap-5 p-4 mb-4  ">
+        <div className="">
+          <Warehouse />
+        </div>
         <div>
           <label className="block text-sm font-medium mb-1">
             Tile Size (meters)
@@ -142,14 +150,14 @@ const WarehousePlanner: React.FC = () => {
           />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1">Tool</label>
+        <div className="flex flex-col lg:block w-full">
+          <label className="block text-sm font-medium mb-1 ">Tool</label>
           <select
             value={selectedTool}
             onChange={(e) => setSelectedTool(e.target.value as ToolType)}
-            className="border rounded p-1"
+            className="border rounded p-1 flex-grow w-full"
           >
-            <option value="shelf">Shelf (2x1)</option>
+            <option value="shelf">Shelf (1x1)</option>
             <option value="forklift">Forklift (1x1)</option>
           </select>
         </div>
@@ -167,28 +175,30 @@ const WarehousePlanner: React.FC = () => {
 
       {/* this is main grid */}
       <div
-        className="relative w-full"
+        className="relative w-full bg-pink-300" //make square container size 600 px
         style={{ aspectRatio: "1/1", maxWidth: "600px" }}
       >
         <div
-          className="grid absolute inset-0 border border-gray-300"
+          className="grid absolute inset-0 border border-gray-300  bg-green-300" // fill square container with grid
           style={{
-            gridTemplateColumns: `repeat(${gridSize.width}, 1fr)`,
+            gridTemplateColumns: `repeat(${gridSize.width}, 1fr)`, // 1fr = each cell takes equal space
             gridTemplateRows: `repeat(${gridSize.height}, 1fr)`,
-          }}
+          }} // create grid with gridTemplateColumns x gridTemplateRows each item will be place in each cell first to last
         >
+          {/* this created grid line and each block */}
           {Array.from({ length: gridSize.height * gridSize.width }).map(
             (_, index) => {
-              const x = index % gridSize.width;
-              const y = Math.floor(index / gridSize.width);
+              const x = index % gridSize.width; // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 = 0-9 by width
+              const y = Math.floor(index / gridSize.width); // = 0 - 9 by hight
               return (
                 <div
                   key={`${x}-${y}`}
-                  className="border border-gray-200 relative hover:bg-gray-100 cursor-pointer"
+                  className="border border-gray-200 relative hover:bg-gray-100 cursor-pointer "
                   onClick={() => handleTileClick(x, y)}
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
                     <Grid className="w-4 h-4" />
+                    {/* <div className="text-lg">{x},{y}</div> */}
                   </div>
                 </div>
               );
@@ -210,9 +220,8 @@ const WarehousePlanner: React.FC = () => {
                 key={item.id}
                 className={`${
                   item.color
-                } cursor-pointer relative transition-all duration-200 ${
-                  selectedItem?.id === item.id ? "ring-2 ring-red-500" : ""
-                }`}
+                } cursor-pointer relative transition-all duration-200 
+                ${selectedItem?.id === item.id ? "ring-2 ring-red-500" : ""}`}
                 style={{
                   gridColumn: `${item.x + 1} / span ${item.width}`,
                   gridRow: `${item.y + 1} / span ${item.height}`,
@@ -235,14 +244,16 @@ const WarehousePlanner: React.FC = () => {
         </div>
       </div>
 
-      <div className="mt-4 text-sm text-gray-600">
-        Click on grid to place items. Click two items to measure the distance
-        between them.
-        <br />
-        • Forklift takes 1x1 tile
-        <br />
-        • Shelf takes 2x1 tiles
-        <br />• Click the X button to delete an item
+      <div className="mt-4 mx-8 lg:mx-0  text-sm text-gray-600 gap-2">
+        <h1 className="font-bold">
+          Click on grid to place items. Click two items to measure the distance
+          between them.
+        </h1>
+        <ul className="list-inside list-disc">
+          <li> Forklift takes 1x1 tile</li>
+          <li> Shelf takes 2x1 tiles</li>
+          <li> Click the X button to delete an item</li>
+        </ul>
       </div>
     </div>
   );
