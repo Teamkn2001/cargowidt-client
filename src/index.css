@@ -5,3 +5,26 @@
 /* * {
     outline: 1px solid rgb(219, 84, 84);
    } */
+
+@layer base {
+  :root {
+
+    --radius: 0.5rem
+  }
+}
+
+.bg-primary {
+  background-color: #0A2647; /* Dark Blue */
+}
+
+.bg-secondary {
+  background-color: #144272; /* Deep Blue */
+}
+
+.bg-content-1 {
+  background-color: #205295; /* Light Sky Blue */
+}
+
+.bg-content-2 {
+  background-color: #2C74B3; /* Soft Blue */
+}

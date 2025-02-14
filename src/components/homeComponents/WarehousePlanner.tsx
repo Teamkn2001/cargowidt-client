@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Forklift, Grid, Package2, Truck, Warehouse, X } from "lucide-react";
 import { Position, GridSize, Item, ItemType, ToolType } from "../../types";
+import { Button } from "../ui/button";
 
 const WarehousePlanner: React.FC = () => {
   const [tileSize, setTileSize] = useState<number>(1);
@@ -54,16 +55,20 @@ const WarehousePlanner: React.FC = () => {
     const item2Right = item2.x + item2.width;
     const item2Bottom = item2.y + item2.height;
 
+    console.log("😀compared this item ", item1, item2)
+
     // Calculate horizontal distance
     let dx = 0;
     if (item1Right <= item2.x) {
       // item1 is to the left of item2
+      console.log("first")
       dx = item2.x - item1Right;
     } else if (item2Right <= item1.x) {
+      console.log("second")
       // item1 is to the right of item2
       dx = item1.x - item2Right;
     }
-
+  
     // Calculate vertical distance
     let dy = 0;
     if (item1Bottom <= item2.y) {
@@ -73,7 +78,7 @@ const WarehousePlanner: React.FC = () => {
       // item1 is below item2
       dy = item1.y - item2Bottom;
     }
-
+    console.log('😀😀find dx and dy =', dx, dy)
     // Total distance is the sum of horizontal and vertical gaps
     return Math.round((dx + dy) * tileSize * 100) / 100;
   };
@@ -197,8 +202,8 @@ const WarehousePlanner: React.FC = () => {
                   onClick={() => handleTileClick(x, y)}
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
-                    <Grid className="w-4 h-4" />
-                    {/* <div className="text-lg">{x},{y}</div> */}
+                    {/* <Grid className="w-4 h-4" /> */}
+                    <div className="text-lg">{x},{y}</div>
                   </div>
                 </div>
               );
@@ -242,6 +247,11 @@ const WarehousePlanner: React.FC = () => {
             );
           })}
         </div>
+      </div>
+
+      <div>
+        <h2>find short distance</h2>
+        <Button className="bg-slate-500">find short distance</Button>
       </div>
 
       <div className="mt-4 mx-8 lg:mx-0  text-sm text-gray-600 gap-2">
