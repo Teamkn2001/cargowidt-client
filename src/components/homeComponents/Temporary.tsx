@@ -11,7 +11,7 @@ export default function Temporary() {
   try {
     // Find path from bottom-left to top-right
     const path = pathfinder.findPath(0, 9, 9, 0);
-    console.log("Path:", path);
+    // console.log("Path:", path);
   } catch (error) {
     console.error("Error finding path:", error);
   }
