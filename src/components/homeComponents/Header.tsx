@@ -21,7 +21,7 @@ export default function Header() {
             }`}
           />
         </button>
-        <ClerkAuth />
+        {/* <ClerkAuth /> */}
       </div>
 
       <nav
@@ -47,7 +47,7 @@ export default function Header() {
           Reference
         </Link>
       </nav>
-      {/* Optional: Backdrop overlay */}
+      {/*  Backdrop overlay */}
       {isMenuOpen && (
         <div
           className="fixed inset-0 z-0 bg-black bg-opacity-50 transition-opacity duration-300"

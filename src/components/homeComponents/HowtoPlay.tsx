@@ -10,7 +10,7 @@ import {
 } from "../ui/table";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { PackageX, RotateCcw } from "lucide-react";
+import { PackagePlus, PackageX } from "lucide-react";
 
 interface ItemData {
   itemName: string;
@@ -99,6 +99,16 @@ export default function HowtoPlay() {
 
   const [errorLackOfData, setErrorLackOfData] = useState(false);
 
+  const handleClearNewItem = () => {
+    setNewItem({
+      itemName: "",
+      weight: "",
+      pickingAmount: "",
+      amount: "",
+      price: "",
+    });
+  };
+
   const handleAddItem = () => {
     if (
       !newItem.itemName ||
@@ -110,8 +120,13 @@ export default function HowtoPlay() {
       setErrorLackOfData(true);
       return;
     }
-    if (items.find((item) => item.itemName === newItem.itemName)) {
+    if (items.find((item) => {
+      let itemName = item.itemName.toLowerCase();
+      let newItemName = newItem.itemName.toLowerCase();
+      return itemName === newItemName;
+    })) {
       setErrorLackOfData(true);
+      return;
     }
 
     const readyItem: ItemData = {
@@ -123,16 +138,9 @@ export default function HowtoPlay() {
       price: Number(newItem.price),
     };
     setItems((prev) => [...prev, readyItem]);
-  };
 
-  const handleClearNewItem = () => {
-    setNewItem({
-      itemName: "",
-      weight: "",
-      pickingAmount: "",
-      amount: "",
-      price: "",
-    });
+    handleClearNewItem();
+    setErrorLackOfData(false);
   };
 
   const handleDeleteItem = (itemName: string) => {
@@ -144,6 +152,8 @@ export default function HowtoPlay() {
   };
 
   const handleCalculatePickRate = () => {
+    setItemPickRate([])
+
     const totalAmount = items.reduce((acc, item) => {
       return acc + item.amount;
     }, 0);
@@ -152,8 +162,6 @@ export default function HowtoPlay() {
     items.map((item, index) => {
       if (totalAmount == 0) return;
       if (item.amount == 0) return;
-
-      if (itemPickRate.find((rate) => rate.itemName === item.itemName)) return;
 
       setItemPickRate((prev) => [
         ...prev,
@@ -362,20 +370,24 @@ export default function HowtoPlay() {
                 />
               </TableCell>
               <TableCell className="text-center">
-                <RotateCcw size={20} onClick={handleClearNewItem} />
+                <PackagePlus size={20} onClick={handleAddItem} />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell colSpan={6}>
+                {errorLackOfData && (
+                  <p className="text-red-500 text-sm lg:text-lg mb-2">
+                    Please fill all the fields and Use duplicate name !
+                  </p>
+                )}
               </TableCell>
             </TableRow>
           </TableBody>
         </Table>
       </div>
 
-      {errorLackOfData && (
-        <p className="text-red-500 text-sm mb-2">
-          Please fill all the fields or Use not duplicate item
-        </p>
-      )}
       <div className="flex justify-end">
-        <Button onClick={handleAddItem}>Add Item</Button>
+        <Button>generate runtime</Button>
       </div>
 
       <div className="w-auto mt-10 px-6 lg:px-0">
@@ -395,7 +407,7 @@ export default function HowtoPlay() {
               <TableRow key={item.itemName}>
                 <TableCell>{item.No}</TableCell>
                 <TableCell>{item.itemName}</TableCell>
-                <TableCell>{item.pickingRate}</TableCell>
+                <TableCell>{item.pickingRate.toFixed(2)}</TableCell>
                 <TableCell>
                   <Input
                     type="number"
