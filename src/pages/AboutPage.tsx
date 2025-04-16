@@ -7,12 +7,13 @@ export default function AboutPage() {
     const pathfinder = new GridPathfinder(3, 3); // set grid size
 
     // Add obstacles from the image
-    pathfinder.addObstacle(2, 1);
+    // pathfinder.addObstacle(2, 1);
+    pathfinder.addObstacle(1, 1);
  
 
     try {
       // Find path from bottom-left to top-right
-      const path = pathfinder.findPath(0, 0, 2, 2);
+      const path = pathfinder.findPath(0, 0, 0, 2);
       console.log("Path:", path);
     } catch (error) {
       console.error("Error finding path :", error);

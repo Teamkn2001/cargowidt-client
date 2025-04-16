@@ -9,8 +9,8 @@ import {
   TableRow,
 } from "../ui/table";
 import { Input } from "../ui/input";
-import { Button } from "../ui/button";
 import { PackagePlus, PackageX } from "lucide-react";
+import { useWarehouse } from "@/contexts/WarehouseContext";
 
 interface ItemData {
   itemName: string;
@@ -28,14 +28,7 @@ interface NewItemData {
   price: string;
 }
 
-interface ItemPickRate {
-  No: number;
-  itemName: string;
-  pickingRate: number;
-  tileSpeed: number;
-}
-
-export default function HowtoPlay() {
+export default function DataInput() {
   const [items, setItems] = useState<ItemData[]>([
     {
       itemName: "INV001",
@@ -83,7 +76,8 @@ export default function HowtoPlay() {
   });
 
   const [selectedItem, setSelectedItem] = useState<string | null>(null);
-  const [itemPickRate, setItemPickRate] = useState<ItemPickRate[]>([]);
+
+  const { state, setItemPickRate, setProductList } = useWarehouse();
 
   const handleInputChange = (
     itemName: string,
@@ -120,11 +114,13 @@ export default function HowtoPlay() {
       setErrorLackOfData(true);
       return;
     }
-    if (items.find((item) => {
-      let itemName = item.itemName.toLowerCase();
-      let newItemName = newItem.itemName.toLowerCase();
-      return itemName === newItemName;
-    })) {
+    if (
+      items.find((item) => {
+        let itemName = item.itemName.toLowerCase();
+        let newItemName = newItem.itemName.toLowerCase();
+        return itemName === newItemName;
+      })
+    ) {
       setErrorLackOfData(true);
       return;
     }
@@ -152,12 +148,11 @@ export default function HowtoPlay() {
   };
 
   const handleCalculatePickRate = () => {
-    setItemPickRate([])
+    setItemPickRate([]);
 
     const totalAmount = items.reduce((acc, item) => {
       return acc + item.amount;
     }, 0);
-    console.log(":smile:", totalAmount);
 
     items.map((item, index) => {
       if (totalAmount == 0) return;
@@ -190,6 +185,8 @@ export default function HowtoPlay() {
 
   useEffect(() => {
     handleCalculatePickRate();
+
+    setProductList(items.map((item) => ({ name: item.itemName })));
   }, [items]);
 
   return (
@@ -387,7 +384,9 @@ export default function HowtoPlay() {
       </div>
 
       <div className="flex justify-end">
-        <Button>generate runtime</Button>
+        <h2 className="font-bold lg:text-2xl">
+          Item picking possibility table
+        </h2>
       </div>
 
       <div className="w-auto mt-10 px-6 lg:px-0">
@@ -398,12 +397,12 @@ export default function HowtoPlay() {
               <TableHead className="w-[100px]">No.</TableHead>
               <TableHead>Item</TableHead>
               <TableHead>picking-rate</TableHead>
-              <TableHead className="text-right">tile/speed</TableHead>
+              <TableHead className="text-right">second per tile</TableHead>
             </TableRow>
           </TableHeader>
 
           <TableBody>
-            {itemPickRate.map((item) => (
+            {state.itemPickRate.map((item) => (
               <TableRow key={item.itemName}>
                 <TableCell>{item.No}</TableCell>
                 <TableCell>{item.itemName}</TableCell>

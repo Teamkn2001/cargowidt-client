@@ -14,6 +14,6 @@ export interface Item extends Position {
   width: number;
   height: number;
   color?: string;
+  icon: ComponentType;
 }
 
-export type ToolType = 'shelf' | 'forklift';

@@ -1,6 +1,5 @@
 import  { useState } from 'react';
 import { Menu } from "lucide-react";
-import ClerkAuth from '../auth/ClerkAuth';
 import { Link } from 'react-router-dom';
 
 export default function Header() {
@@ -21,7 +20,6 @@ export default function Header() {
             }`}
           />
         </button>
-        {/* <ClerkAuth /> */}
       </div>
 
       <nav
@@ -61,7 +59,6 @@ export default function Header() {
       <Link to="/">Home</Link>
       <Link to="/about">About</Link>
       <Link to="/reference">Reference</Link>
-      <ClerkAuth />
     </nav>
   </header>
   );

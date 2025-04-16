@@ -1,21 +1,26 @@
-import React, { useState } from "react";
-import { Forklift, Grid, Package2, Truck, Warehouse, X } from "lucide-react";
-import { Position, GridSize, Item, ItemType, ToolType } from "../../types";
+import React, { useEffect, useState } from "react";
+import {Package2, Warehouse, X } from "lucide-react";
+import { GridSize, Item,} from "../../types";
 import { Button } from "../ui/button";
+import { useWarehouse } from "@/contexts/WarehouseContext";
 
-const WarehousePlanner: React.FC = () => {
+export default function WarehousePlanner() {
   const [tileSize, setTileSize] = useState<number>(1);
   const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 });
-  const [selectedTool, setSelectedTool] = useState<ToolType>("shelf");
+  const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [items, setItems] = useState<Item[]>([]);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const itemTypes: Record<ToolType, ItemType> = {
-    shelf: { width: 1, height: 1, color: "bg-blue-500", icon: Package2 },
-    forklift: { width: 1, height: 1, color: "bg-yellow-500", icon: Forklift},
-  };
+  const { state, setWarehouseSize, setItemInWarehouse } = useWarehouse();
+
+  useEffect(() => {
+    // Set the first product as selected product when list loads or changes
+    if (state.productList.length > 0 && !selectedProduct) {
+      setSelectedProduct(state.productList[0].name);
+    }
+  }, [state.productList, selectedProduct]);
 
   const checkOverlap = (item1: Item, item2: Item): boolean => {
     return !(
@@ -55,20 +60,20 @@ const WarehousePlanner: React.FC = () => {
     const item2Right = item2.x + item2.width;
     const item2Bottom = item2.y + item2.height;
 
-    console.log("😀compared this item ", item1, item2)
+    console.log("😀compared this item ", item1, item2);
 
     // Calculate horizontal distance
     let dx = 0;
     if (item1Right <= item2.x) {
       // item1 is to the left of item2
-      console.log("first")
+      console.log("first");
       dx = item2.x - item1Right;
     } else if (item2Right <= item1.x) {
-      console.log("second")
+      console.log("second");
       // item1 is to the right of item2
       dx = item1.x - item2Right;
     }
-  
+
     // Calculate vertical distance
     let dy = 0;
     if (item1Bottom <= item2.y) {
@@ -78,25 +83,25 @@ const WarehousePlanner: React.FC = () => {
       // item1 is below item2
       dy = item1.y - item2Bottom;
     }
-    console.log('😀😀find dx and dy =', dx, dy)
+    console.log("😀😀find dx and dy =", dx, dy);
     // Total distance is the sum of horizontal and vertical gaps
     return Math.round((dx + dy) * tileSize * 100) / 100;
   };
 
   const handleTileClick = (x: number, y: number): void => {
     console.log("get x and y =", x, y);
-    if (selectedTool) {
-      console.log(selectedTool);
-      const typeInfo = itemTypes[selectedTool];
-      console.log(typeInfo);
+    if (selectedProduct) {
+      // All products have size of 1x1
       const newItem: Item = {
         id: Date.now(),
-        type: selectedTool,
+        type: selectedProduct,
         x,
         y,
-        ...typeInfo,
+        width: 1,
+        height: 1,
+        color: "bg-blue-500",
+        icon: Package2,
       };
-      console.log("newItem to add :", newItem);
 
       if (isValidPosition(newItem)) {
         setItems([...items, newItem]);
@@ -105,6 +110,8 @@ const WarehousePlanner: React.FC = () => {
       }
     }
   };
+
+  console.log(`Items in the grid:`, items);
 
   const handleItemClick = (clickedItem: Item, e: React.MouseEvent): void => {
     e.stopPropagation();
@@ -135,6 +142,11 @@ const WarehousePlanner: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    setWarehouseSize(gridSize); // update warehouse size in context
+    setItemInWarehouse(items); // update items in context
+  }, [gridSize, tileSize, items]);
+
   return (
     <div className="flex flex-col items-center mx-2 lg:mx-0">
       <div className="flex flex-col lg:flex-row items-center gap-5 p-4 mb-4  ">
@@ -156,14 +168,21 @@ const WarehousePlanner: React.FC = () => {
         </div>
 
         <div className="flex flex-col lg:block w-full">
-          <label className="block text-sm font-medium mb-1 ">Tool</label>
+          <label className="block text-sm font-medium mb-1 ">Product</label>
           <select
-            value={selectedTool}
-            onChange={(e) => setSelectedTool(e.target.value as ToolType)}
+            value={selectedProduct}
+            onChange={(e) => setSelectedProduct(e.target.value)}
             className="border rounded p-1 flex-grow w-full"
           >
-            <option value="shelf">Shelf (1x1)</option>
-            <option value="forklift">Forklift (1x1)</option>
+            {state.productList && state.productList.length > 0 ? (
+              state.productList.map((product) => (
+                <option key={product.name} value={product.name}>
+                  {product.name}
+                </option>
+              ))
+            ) : (
+              <option value="">No products available</option>
+            )}
           </select>
         </div>
       </div>
@@ -177,6 +196,18 @@ const WarehousePlanner: React.FC = () => {
           Distance between items: {distance} meters
         </div>
       )}
+
+      <div className="mt-4 mx-2 lg:mx-0  text-sm text-gray-600 gap-2">
+        <h1 className="font-bold">
+          Click on grid to place items. Click two items to measure the distance
+          between them.
+        </h1>
+        <ul className="list-inside list-disc">
+          <li> Forklift takes 1x1 tile</li>
+          <li> Shelf takes 2x1 tiles</li>
+          <li> Click the X button to delete an item</li>
+        </ul>
+      </div>
 
       {/* this is main grid */}
       <div
@@ -203,7 +234,9 @@ const WarehousePlanner: React.FC = () => {
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
                     {/* <Grid className="w-4 h-4" /> */}
-                    <div className="text-lg">{x},{y}</div>
+                    <div className="text-lg">
+                      {x},{y}
+                    </div>
                   </div>
                 </div>
               );
@@ -218,34 +251,34 @@ const WarehousePlanner: React.FC = () => {
             gridTemplateRows: `repeat(${gridSize.height}, 1fr)`,
           }}
         >
-          {items.map((item) => {
-            const ItemIcon = itemTypes[item.type as ToolType].icon;
-            return (
-              <div
-                key={item.id}
-                className={`${
-                  item.color
-                } cursor-pointer relative transition-all duration-200 
-                ${selectedItem?.id === item.id ? "ring-2 ring-red-500" : ""}`}
-                style={{
-                  gridColumn: `${item.x + 1} / span ${item.width}`,
-                  gridRow: `${item.y + 1} / span ${item.height}`,
-                  pointerEvents: "auto",
-                }}
-                onClick={(e) => handleItemClick(item, e)}
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className={`${
+                item.color
+              } cursor-pointer relative transition-all duration-200 
+              ${selectedItem?.id === item.id ? "ring-2 ring-red-500" : ""}`}
+              style={{
+                gridColumn: `${item.x + 1} / span ${item.width}`,
+                gridRow: `${item.y + 1} / span ${item.height}`,
+                pointerEvents: "auto",
+              }}
+              onClick={(e) => handleItemClick(item, e)}
+            >
+              <button
+                className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+                onClick={(e) => handleDeleteItem(item.id, e)}
               >
-                <button
-                  className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
-                  onClick={(e) => handleDeleteItem(item.id, e)}
-                >
-                  <X className="w-3 h-3" />
-                </button>
-                <div className="flex items-center justify-center h-full">
-                  <ItemIcon />
-                </div>
+                <X className="w-3 h-3" />
+              </button>
+              <div className="flex items-center justify-center h-full">
+                <Package2 />
+                <span className="text-xs absolute bottom-0 left-0 right-0 text-center bg-black bg-opacity-50 text-white truncate px-1">
+                  {item.type}
+                </span>
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       </div>
 
@@ -253,20 +286,6 @@ const WarehousePlanner: React.FC = () => {
         <h2>find short distance</h2>
         <Button className="bg-slate-500">find short distance</Button>
       </div>
-
-      <div className="mt-4 mx-8 lg:mx-0  text-sm text-gray-600 gap-2">
-        <h1 className="font-bold">
-          Click on grid to place items. Click two items to measure the distance
-          between them.
-        </h1>
-        <ul className="list-inside list-disc">
-          <li> Forklift takes 1x1 tile</li>
-          <li> Shelf takes 2x1 tiles</li>
-          <li> Click the X button to delete an item</li>
-        </ul>
-      </div>
     </div>
   );
-};
-
-export default WarehousePlanner;
+}
