@@ -1,3 +1,4 @@
+import { ItemData } from "@/components/homeComponents/DataInput";
 import { GridSize, Item, Position } from "@/types";
 import { createContext, useContext, useState, ReactNode } from "react";
 
@@ -8,23 +9,18 @@ export interface ItemPickRate {
   tileSpeed: number;
 }
 
-export interface ProductList {
-  name: string;
-}
-
-// ------------------>> continue from here
-
-// export interface ItemInWarehouse extends Item {
-//     standByPosition: Position;
-//     exitPosition: Position;
+// export interface ProductList {
+//   name: string;
 // }
 
 // Define an extensible context type with generic state
 export interface WarehouseState {
   itemPickRate: ItemPickRate[];
   warehouseSize: GridSize;
-  productList: ProductList[];
+  productList: ItemData [];
   itemInWarehouse: Item[];
+  standByPosition: Position | null;
+  exitPosition: Position | null;
 }
 
 // Create a type for the context that includes both state and setters
@@ -34,8 +30,10 @@ export interface WarehouseContextType {
   // State setters
   setItemPickRate: React.Dispatch<React.SetStateAction<ItemPickRate[]>>;
   setWarehouseSize: React.Dispatch<React.SetStateAction<GridSize>>;
-  setProductList: React.Dispatch<React.SetStateAction<ProductList[]>>;
+  setProductList: React.Dispatch<React.SetStateAction<ItemData[]>>;
   setItemInWarehouse: React.Dispatch<React.SetStateAction<Item[]>>;
+  setStandByPosition: React.Dispatch<React.SetStateAction<Position | null>>;
+  setExitPosition: React.Dispatch<React.SetStateAction<Position | null>>;
 }
 
 const initialState: WarehouseState = {
@@ -43,6 +41,8 @@ const initialState: WarehouseState = {
   warehouseSize: { width: 10, height: 10 },
   productList: [],
   itemInWarehouse: [],
+  standByPosition: null,
+  exitPosition: null,
 };
 
 const initialContext: WarehouseContextType = {
@@ -59,6 +59,12 @@ const initialContext: WarehouseContextType = {
   setItemInWarehouse: () => {
     console.warn("setItemInWarehouse was called outside of WarehouseProvider");
   },
+  setStandByPosition: () => {
+    console.warn("setStandByPosition was called outside of WarehouseProvider");
+  },
+  setExitPosition: () => {
+    console.warn("setExitPosition was called outside of WarehouseProvider");
+  },
 };
 
 // Create the context with the initial value
@@ -73,12 +79,15 @@ export function WarehouseProvider({ children }: { children: ReactNode }) {
     height: 10,
   });
 
-  const [productList, setProductList] = useState<ProductList[]>([]);
+  const [productList, setProductList] = useState<ItemData[]>([]); // is it needed?
   const [itemInWarehouse, setItemInWarehouse] = useState<Item[]>([]);
+  const [standByPosition, setStandByPosition] = useState<Position | null>(null);
+  const [exitPosition, setExitPosition] = useState<Position | null>(null);
 
-  console.log(`itemInWarehouse - at context`, itemInWarehouse);
-  console.log(`productList - at context`, productList);
-  console.log(`itemPickRate - at context`, itemPickRate);
+//   console.log(`itemInWarehouse - at context`, itemInWarehouse);
+//   console.log(`productList - at context`, productList);
+//   console.log(`itemPickRate - at context`, itemPickRate);
+//   console.log(`stand by and exit - at context`, standByPosition, exitPosition);
 
   // Combine all state into a single object
   const state: WarehouseState = {
@@ -86,6 +95,8 @@ export function WarehouseProvider({ children }: { children: ReactNode }) {
     warehouseSize,
     productList,
     itemInWarehouse,
+    standByPosition,
+    exitPosition,
   };
 
   // Create the context value with state and setters
@@ -95,6 +106,8 @@ export function WarehouseProvider({ children }: { children: ReactNode }) {
     setWarehouseSize,
     setProductList,
     setItemInWarehouse,
+    setStandByPosition,
+    setExitPosition,
   };
 
   return (

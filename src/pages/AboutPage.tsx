@@ -7,7 +7,6 @@ export default function AboutPage() {
     const pathfinder = new GridPathfinder(3, 3); // set grid size
 
     // Add obstacles from the image
-    // pathfinder.addObstacle(2, 1);
     pathfinder.addObstacle(1, 1);
  
 

@@ -12,7 +12,7 @@ import { Input } from "../ui/input";
 import { PackagePlus, PackageX } from "lucide-react";
 import { useWarehouse } from "@/contexts/WarehouseContext";
 
-interface ItemData {
+export interface ItemData {
   itemName: string;
   weight: number;
   pickingAmount: number;
@@ -186,7 +186,7 @@ export default function DataInput() {
   useEffect(() => {
     handleCalculatePickRate();
 
-    setProductList(items.map((item) => ({ name: item.itemName })));
+    setProductList(items.map((item) => ({ itemName: item.itemName , amount: item.amount, weight: item.weight, pickingAmount: item.pickingAmount, price: item.price })));
   }, [items]);
 
   return (

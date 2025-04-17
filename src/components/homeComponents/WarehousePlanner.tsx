@@ -1,26 +1,30 @@
 import React, { useEffect, useState } from "react";
-import {Package2, Warehouse, X } from "lucide-react";
-import { GridSize, Item,} from "../../types";
+import { Goal, Package2, PersonStanding, Warehouse, X } from "lucide-react";
+import { GridSize, Item } from "../../types";
 import { Button } from "../ui/button";
 import { useWarehouse } from "@/contexts/WarehouseContext";
+
+type PlacementMode = "item" | "exit" | "standby" | null;
 
 export default function WarehousePlanner() {
   const [tileSize, setTileSize] = useState<number>(1);
   const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 });
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [items, setItems] = useState<Item[]>([]);
+
+  const [placementMode, setPlacementMode] = useState<PlacementMode>(null);
+
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [distance, setDistance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const { state, setWarehouseSize, setItemInWarehouse } = useWarehouse();
-
-  useEffect(() => {
-    // Set the first product as selected product when list loads or changes
-    if (state.productList.length > 0 && !selectedProduct) {
-      setSelectedProduct(state.productList[0].name);
-    }
-  }, [state.productList, selectedProduct]);
+  const {
+    state,
+    setWarehouseSize,
+    setItemInWarehouse,
+    setStandByPosition,
+    setExitPosition,
+  } = useWarehouse();
 
   const checkOverlap = (item1: Item, item2: Item): boolean => {
     return !(
@@ -89,29 +93,32 @@ export default function WarehousePlanner() {
   };
 
   const handleTileClick = (x: number, y: number): void => {
-    console.log("get x and y =", x, y);
-    if (selectedProduct) {
-      // All products have size of 1x1
-      const newItem: Item = {
-        id: Date.now(),
-        type: selectedProduct,
-        x,
-        y,
-        width: 1,
-        height: 1,
-        color: "bg-blue-500",
-        icon: Package2,
-      };
+    console.log("%c get x and y =", "background: yellow", x, y);
+    if (placementMode === "item") {
+      if (selectedProduct) {
+        const newItem: Item = {
+          id: Date.now(),
+          type: selectedProduct,
+          x,
+          y,
+          width: 1,
+          height: 1,
+          color: "bg-blue-500",
+          icon: Package2,
+        };
 
-      if (isValidPosition(newItem)) {
-        setItems([...items, newItem]);
-        setSelectedItem(null);
-        setDistance(null);
+        if (isValidPosition(newItem)) {
+          setItems([...items, newItem]);
+          setSelectedItem(null);
+          setDistance(null);
+        }
       }
+    } else if (placementMode === "exit") {
+      setExitPosition({ x, y });
+    } else if (placementMode === "standby") {
+      setStandByPosition({ x, y });
     }
   };
-
-  console.log(`Items in the grid:`, items);
 
   const handleItemClick = (clickedItem: Item, e: React.MouseEvent): void => {
     e.stopPropagation();
@@ -147,10 +154,17 @@ export default function WarehousePlanner() {
     setItemInWarehouse(items); // update items in context
   }, [gridSize, tileSize, items]);
 
+  useEffect(() => {
+    // Set the first product as selected product when list loads or changes
+    if (state.productList.length > 0 && !selectedProduct) {
+      setSelectedProduct(state.productList[0].itemName);
+    }
+  }, [state.productList, selectedProduct]);
+
   return (
     <div className="flex flex-col items-center mx-2 lg:mx-0">
-      <div className="flex flex-col lg:flex-row items-center gap-5 p-4 mb-4  ">
-        <div className="">
+      <div className="flex flex-col items-center gap-5 p-4 mb-4  ">
+        <div>
           <Warehouse />
         </div>
         <div>
@@ -167,7 +181,7 @@ export default function WarehousePlanner() {
           />
         </div>
 
-        <div className="flex flex-col lg:block w-full">
+        <div className="flex flex-col lg:flex-row w-full gap-2">
           <label className="block text-sm font-medium mb-1 ">Product</label>
           <select
             value={selectedProduct}
@@ -176,15 +190,44 @@ export default function WarehousePlanner() {
           >
             {state.productList && state.productList.length > 0 ? (
               state.productList.map((product) => (
-                <option key={product.name} value={product.name}>
-                  {product.name}
+                <option key={product.itemName} value={product.itemName}>
+                  {product.itemName}
                 </option>
               ))
             ) : (
               <option value="">No products available</option>
             )}
           </select>
+          <Button
+            onClick={() => setPlacementMode("item")}
+            disabled={!selectedProduct || placementMode === "item"}
+            className={placementMode === "item" ? "active" : ""}
+          >
+            Place Item
+          </Button>
         </div>
+
+       <div className="flex gap-2 lg:gap-6">
+       <div>
+          <Button
+            onClick={() => setPlacementMode("exit")}
+            disabled={placementMode === "exit"}
+            className={placementMode === "exit" ? "active" : ""}
+          >
+            Place Exit Position
+          </Button>
+        </div>
+
+        <div>
+          <Button
+            onClick={() => setPlacementMode("standby")}
+            disabled={placementMode === "standby"}
+            className={placementMode === "standby" ? "active" : ""}
+          >
+            Place Standby Position
+          </Button>
+        </div>
+       </div>
       </div>
 
       {error && (
@@ -256,7 +299,7 @@ export default function WarehousePlanner() {
               key={item.id}
               className={`${
                 item.color
-              } cursor-pointer relative transition-all duration-200 
+              } cursor-pointer relative transition-all duration-200
               ${selectedItem?.id === item.id ? "ring-2 ring-red-500" : ""}`}
               style={{
                 gridColumn: `${item.x + 1} / span ${item.width}`,
@@ -279,6 +322,46 @@ export default function WarehousePlanner() {
               </div>
             </div>
           ))}
+
+          {/* Exit position */}
+          {state.exitPosition && (
+            <div
+              className="bg-red-200 cursor-pointer relative transition-all duration-200 border-2 border-red-500 "
+              style={{
+                gridColumn: `${state.exitPosition.x + 1} / span 1`,
+                gridRow: `${state.exitPosition.y + 1} / span 1`,
+                pointerEvents: "auto",
+              }}
+              // onClick={() => handleSpecialPositionClick('exit')}
+            >
+              <div className="flex items-center justify-center h-full">
+                <Goal className="w-6 h-6 text-red-600" />
+                <span className="text-xs absolute bottom-0 left-0 right-0 text-center bg-red-600 text-white truncate px-1">
+                  Exit
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* StandBy position */}
+          {state.standByPosition && (
+            <div
+              className="bg-blue-200 cursor-pointer relative transition-all duration-200 border-2 border-blue-500"
+              style={{
+                gridColumn: `${state.standByPosition.x + 1} / span 1`,
+                gridRow: `${state.standByPosition.y + 1} / span 1`,
+                pointerEvents: "auto",
+              }}
+              // onClick={() => handleSpecialPositionClick('standby')}
+            >
+              <div className="flex items-center justify-center h-full">
+                <PersonStanding className="w-6 h-6 text-blue-600" />
+                <span className="text-xs absolute bottom-0 left-0 right-0 text-center bg-blue-600 text-white truncate px-1">
+                  Standby
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

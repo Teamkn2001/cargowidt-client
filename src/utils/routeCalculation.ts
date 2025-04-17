@@ -131,35 +131,35 @@ export class GridPathfinder {
       this.heuristic(startX, startY, goalX, goalY)
     );
 
-    console.log(
-      "%c startNode",
-      "background: blue; color: white; padding: 2px 6px; border-radius: 4px;",
-      startNode
-    );
+    // console.log(
+    //   "%c startNode",
+    //   "background: blue; color: white; padding: 2px 6px; border-radius: 4px;",
+    //   startNode
+    // );
 
     openSet.add(startNode);
     const nodeMap = new Map<GridPosition, PathNode>();
     nodeMap.set(`${startX},${startY}`, startNode);
-    console.log(
-      `%c openSet`,
-      "background: yellow; color: blue; padding: 2px 6px; border-radius: 4px;",
-      openSet
-    );
+    // console.log(
+    //   `%c openSet`,
+    //   "background: yellow; color: blue; padding: 2px 6px; border-radius: 4px;",
+    //   openSet
+    // );
 
     while (openSet.size > 0) {
       // Find node with lowest f-score
       const current = Array.from(openSet).reduce((a, b) => (a.f < b.f ? a : b));
-      console.log(`array.form(openSet)`, Array.from(openSet));
+      // console.log(`array.form(openSet)`, Array.from(openSet));
 
-      console.log(
-        `%c current`,
-        "background: green; color: white; padding: 2px 6px; border-radius: 4px;",
-        current
-      );
+      // console.log(
+      //   `%c current`,
+      //   "background: green; color: white; padding: 2px 6px; border-radius: 4px;",
+      //   current
+      // );
 
       // Check if we reached the goal
       if (current.x === goalX && current.y === goalY) {
-        console.log(`Reached goal! NODE`);
+        // console.log(`Reached goal! NODE`);
         return this.reconstructPath(current);
       }
 
@@ -171,14 +171,14 @@ export class GridPathfinder {
       for (const neighbor of this.getNeighbors(current.x, current.y)) {
         const neighborKey: GridPosition = `${neighbor.x},${neighbor.y}`;
 
-        console.log(
-          `%c neighborKey 📌:`,
-          "background: orange; font-weight: bold; color: white",
-          neighborKey
-        );
+        // console.log(
+        //   `%c neighborKey 📌:`,
+        //   "background: orange; font-weight: bold; color: white",
+        //   neighborKey
+        // );
 
         if (closedSet.has(neighborKey)) {
-          console.log(`Skip neighbor ${neighborKey} (already evaluated)`);
+          // console.log(`Skip neighbor ${neighborKey} (already evaluated)`);
           continue; // skip if already evaluated
         }
 
@@ -197,14 +197,14 @@ export class GridPathfinder {
           nodeMap.set(neighborKey, neighborNode);
           openSet.add(neighborNode);
           neighborNode.parent = current;
-          console.log(`%c current nodeMap:`, "background: orange;", nodeMap);
-          console.log(
-            `%c current openSet:`,
-            "background: orange;",
-            neighborNode
-          );
+          // console.log(`%c current nodeMap:`, "background: orange;", nodeMap);
+          // console.log(
+          //   `%c current openSet:`,
+          //   "background: orange;",
+          //   neighborNode
+          // );
         } else if (tentativeCost < neighborNode.cost) {
-          console.log(`found a better path to ${neighborKey} 🔥`);
+          // console.log(`found a better path to ${neighborKey} 🔥`);
           neighborNode.parent = current;
           neighborNode.cost = tentativeCost;
           neighborNode.f = neighborNode.cost + neighborNode.heuristic;
