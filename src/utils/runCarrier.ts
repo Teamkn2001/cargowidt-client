@@ -189,7 +189,6 @@ export class runCarrier {
         if (isAdded) {
             productsValue.forEach((product) => {
                 if (product.productName == route.productName) {
-                    product.pickAmount += 1;
 
                     const pricePerUnit = productListData.find((item) => item.itemName == route.productName)?.price || 0;
                     const eachPickUpAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;

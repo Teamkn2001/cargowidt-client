@@ -32,37 +32,16 @@ export default function DataInput() {
   const [items, setItems] = useState<ItemData[]>([
     {
       itemName: "INV001",
-      weight: 10.2,
+      weight: 1,
       pickingAmount: 3,
-      amount: 270,
+      amount: 100,
       price: 15,
     },
     {
       itemName: "INV002",
-      weight: 5.4,
+      weight: 1,
       pickingAmount: 7,
-      amount: 250,
-      price: 15,
-    },
-    {
-      itemName: "INV003",
-      weight: 5.0,
-      pickingAmount: 12,
-      amount: 250,
-      price: 15,
-    },
-    {
-      itemName: "INV004",
-      weight: 0,
-      pickingAmount: 15,
-      amount: 250,
-      price: 15,
-    },
-    {
-      itemName: "INV005",
-      weight: 0,
-      pickingAmount: 7,
-      amount: 250,
+      amount: 100,
       price: 15,
     },
   ]);
@@ -190,11 +169,7 @@ export default function DataInput() {
   }, [items]);
 
   return (
-    <div className="flex flex-col items-center justify-center mb-4  mt-[5rem] lg:mt-24 ">
-      <div>
-        <h1>CargoWIDT.v1</h1>
-        <p>Hello, from dep talk about how to play this game</p>
-      </div>
+    <div className="flex flex-col items-center justify-center mb-4 mt-[2rem] lg:mt-[4rem] ">
 
       <div className="p-1 lg:p-0">
         <Table>
@@ -226,6 +201,7 @@ export default function DataInput() {
                         handleInputChange(item.itemName, "itemName", e)
                       }
                       className="w-full"
+                      onClick={(e) => e.stopPropagation()} // Stop event from bubbling up to the row
                     />
                   ) : (
                     <span>{item.itemName}</span>
@@ -240,6 +216,7 @@ export default function DataInput() {
                         handleInputChange(item.itemName, "weight", e)
                       }
                       className="w-full"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <span>{item.weight}</span>
@@ -254,6 +231,7 @@ export default function DataInput() {
                         handleInputChange(item.itemName, "pickingAmount", e)
                       }
                       className="w-full"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <span>{item.pickingAmount}</span>
@@ -268,6 +246,7 @@ export default function DataInput() {
                         handleInputChange(item.itemName, "amount", e)
                       }
                       className="w-full"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <span>{item.amount}</span>
@@ -282,6 +261,7 @@ export default function DataInput() {
                         handleInputChange(item.itemName, "price", e)
                       }
                       className="w-full"
+                      onClick={(e) => e.stopPropagation()}
                     />
                   ) : (
                     <span>{item.price}</span>
@@ -373,8 +353,8 @@ export default function DataInput() {
             <TableRow>
               <TableCell colSpan={6}>
                 {errorLackOfData && (
-                  <p className="text-red-500 text-sm lg:text-lg mb-2">
-                    Please fill all the fields and Use duplicate name !
+                  <p className="text-red-600 text-sm lg:text-lg mb-2">
+                    Must fill all the fields and use duplicate product name !
                   </p>
                 )}
               </TableCell>
@@ -406,7 +386,7 @@ export default function DataInput() {
               <TableRow key={item.itemName}>
                 <TableCell>{item.No}</TableCell>
                 <TableCell>{item.itemName}</TableCell>
-                <TableCell>{item.pickingRate.toFixed(2)}</TableCell>
+                <TableCell>{item.pickingRate.toFixed(2)} %</TableCell>
                 <TableCell>
                   <Input
                     type="number"

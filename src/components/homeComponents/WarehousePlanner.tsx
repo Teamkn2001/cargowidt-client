@@ -8,14 +8,13 @@ type PlacementMode = "item" | "exit" | "standby" | null;
 
 export default function WarehousePlanner() {
   const [tileSize, setTileSize] = useState<number>(1);
-  const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 });
+  const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 }); // default grid size
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [items, setItems] = useState<Item[]>([]);
 
   const [placementMode, setPlacementMode] = useState<PlacementMode>(null);
 
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [distance, setDistance] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -57,43 +56,8 @@ export default function WarehousePlanner() {
     return true;
   };
 
-  const calculateDistance = (item1: Item, item2: Item): number => {
-    // Find the edges of each item
-    const item1Right = item1.x + item1.width;
-    const item1Bottom = item1.y + item1.height;
-    const item2Right = item2.x + item2.width;
-    const item2Bottom = item2.y + item2.height;
-
-    console.log("😀compared this item ", item1, item2);
-
-    // Calculate horizontal distance
-    let dx = 0;
-    if (item1Right <= item2.x) {
-      // item1 is to the left of item2
-      console.log("first");
-      dx = item2.x - item1Right;
-    } else if (item2Right <= item1.x) {
-      console.log("second");
-      // item1 is to the right of item2
-      dx = item1.x - item2Right;
-    }
-
-    // Calculate vertical distance
-    let dy = 0;
-    if (item1Bottom <= item2.y) {
-      // item1 is above item2
-      dy = item2.y - item1Bottom;
-    } else if (item2Bottom <= item1.y) {
-      // item1 is below item2
-      dy = item1.y - item2Bottom;
-    }
-    console.log("😀😀find dx and dy =", dx, dy);
-    // Total distance is the sum of horizontal and vertical gaps
-    return Math.round((dx + dy) * tileSize * 100) / 100;
-  };
-
   const handleTileClick = (x: number, y: number): void => {
-    console.log("%c get x and y =", "background: yellow", x, y);
+    // console.log("%c get x and y =", "background: yellow", x, y);
     if (placementMode === "item") {
       if (selectedProduct) {
         const newItem: Item = {
@@ -110,7 +74,6 @@ export default function WarehousePlanner() {
         if (isValidPosition(newItem)) {
           setItems([...items, newItem]);
           setSelectedItem(null);
-          setDistance(null);
         }
       }
     } else if (placementMode === "exit") {
@@ -125,16 +88,12 @@ export default function WarehousePlanner() {
     console.log("clicked at item", clickedItem);
     if (selectedItem) {
       if (selectedItem.id !== clickedItem.id) {
-        const dist = calculateDistance(selectedItem, clickedItem);
-        setDistance(dist);
         setSelectedItem(null);
       } else {
         setSelectedItem(null);
-        setDistance(null);
       }
     } else {
       setSelectedItem(clickedItem);
-      setDistance(null);
     }
     setError(null);
   };
@@ -145,7 +104,6 @@ export default function WarehousePlanner() {
     setItems(items.filter((item) => item.id !== itemId)); // remove item from items array (filter what is not the Id)
     if (selectedItem?.id === itemId) {
       setSelectedItem(null);
-      setDistance(null);
     }
   };
 
@@ -162,8 +120,8 @@ export default function WarehousePlanner() {
   }, [state.productList, selectedProduct]);
 
   return (
-    <div className="flex flex-col items-center mx-2 lg:mx-0">
-      <div className="flex flex-col items-center gap-5 p-4 mb-4  ">
+    <div className="flex flex-col items-center mx-2 lg:mx-0 ">
+      <div className="flex flex-col items-center gap-5 p-4 mb-4 ">
         <div>
           <Warehouse />
         </div>
@@ -181,8 +139,8 @@ export default function WarehousePlanner() {
           />
         </div>
 
-        <div className="flex flex-col lg:flex-row w-full gap-2">
-          <label className="block text-sm font-medium mb-1 ">Product</label>
+        <div className="flex flex-col lg:flex-row w-full gap-2  lg:items-center">
+          <label className="text-sm font-medium mb-1">Product</label>
           <select
             value={selectedProduct}
             onChange={(e) => setSelectedProduct(e.target.value)}
@@ -207,50 +165,32 @@ export default function WarehousePlanner() {
           </Button>
         </div>
 
-       <div className="flex gap-2 lg:gap-6">
-       <div>
-          <Button
-            onClick={() => setPlacementMode("exit")}
-            disabled={placementMode === "exit"}
-            className={placementMode === "exit" ? "active" : ""}
-          >
-            Place Exit Position
-          </Button>
-        </div>
+        <div className="flex gap-2 lg:gap-6">
+          <div>
+            <Button
+              onClick={() => setPlacementMode("exit")}
+              disabled={placementMode === "exit"}
+              className={placementMode === "exit" ? "active" : ""}
+            >
+              Place Exit Position
+            </Button>
+          </div>
 
-        <div>
-          <Button
-            onClick={() => setPlacementMode("standby")}
-            disabled={placementMode === "standby"}
-            className={placementMode === "standby" ? "active" : ""}
-          >
-            Place Standby Position
-          </Button>
+          <div>
+            <Button
+              onClick={() => setPlacementMode("standby")}
+              disabled={placementMode === "standby"}
+              className={placementMode === "standby" ? "active" : ""}
+            >
+              Place Standby Position
+            </Button>
+          </div>
         </div>
-       </div>
       </div>
 
       {error && (
         <div className="mb-4 p-2 bg-red-100 text-red-700 rounded">{error}</div>
       )}
-
-      {distance !== null && (
-        <div className="mb-4 p-2 bg-blue-100 rounded">
-          Distance between items: {distance} meters
-        </div>
-      )}
-
-      <div className="mt-4 mx-2 lg:mx-0  text-sm text-gray-600 gap-2">
-        <h1 className="font-bold">
-          Click on grid to place items. Click two items to measure the distance
-          between them.
-        </h1>
-        <ul className="list-inside list-disc">
-          <li> Forklift takes 1x1 tile</li>
-          <li> Shelf takes 2x1 tiles</li>
-          <li> Click the X button to delete an item</li>
-        </ul>
-      </div>
 
       {/* this is main grid */}
       <div
@@ -308,12 +248,14 @@ export default function WarehousePlanner() {
               }}
               onClick={(e) => handleItemClick(item, e)}
             >
-              <button
-                className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
-                onClick={(e) => handleDeleteItem(item.id, e)}
-              >
-                <X className="w-3 h-3" />
-              </button>
+              {selectedItem?.id === item.id && (
+                <button
+                  className="absolute top-0 right-0 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 transform translate-x-1/2 -translate-y-1/2"
+                  onClick={(e) => handleDeleteItem(item.id, e)}
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              )}
               <div className="flex items-center justify-center h-full">
                 <Package2 />
                 <span className="text-xs absolute bottom-0 left-0 right-0 text-center bg-black bg-opacity-50 text-white truncate px-1">
@@ -363,11 +305,6 @@ export default function WarehousePlanner() {
             </div>
           )}
         </div>
-      </div>
-
-      <div>
-        <h2>find short distance</h2>
-        <Button className="bg-slate-500">find short distance</Button>
       </div>
     </div>
   );

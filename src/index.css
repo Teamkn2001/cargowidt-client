@@ -28,3 +28,12 @@
 .bg-content-2 {
   background-color: #2C74B3; /* Soft Blue */
 }
+
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}

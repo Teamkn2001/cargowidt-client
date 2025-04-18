@@ -9,10 +9,6 @@ export interface ItemPickRate {
   tileSpeed: number;
 }
 
-// export interface ProductList {
-//   name: string;
-// }
-
 // Define an extensible context type with generic state
 export interface WarehouseState {
   itemPickRate: ItemPickRate[];
