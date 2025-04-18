@@ -41,6 +41,53 @@ export class runCarrier {
     this.itemPickRate = itemPickRate;
   }
 
+  private validateData() {
+    if (!this.productList || this.productList.length === 0) {
+      throw new Error("Product list is empty or not provided.");
+    }
+    if (!this.RandomProductList || this.RandomProductList.length === 0) {
+      throw new Error("Random product list is empty or not provided.");
+    }
+    if (!this.WarehouseSize) {
+      throw new Error("Warehouse size is not provided.");
+    }
+    if (!this.itemInWarehouse || this.itemInWarehouse.length === 0) {
+      throw new Error("Item in warehouse is empty or not provided.");
+    }
+    if (!this.standByPosition) {
+      throw new Error("Standby position is not provided.");
+    }
+    if (!this.exitPosition) {
+      throw new Error("Exit position is not provided.");
+    }
+    if (!this.itemPickRate || this.itemPickRate.length === 0) {
+      throw new Error("Item pick rate is empty or not provided.");
+    }
+
+    if (this.standByPosition.x < 0 || this.standByPosition.y < 0) {
+      throw new Error("Standby position is out of bounds.");
+    }
+    if (this.exitPosition.x < 0 || this.exitPosition.y < 0) {
+      throw new Error("Exit position is out of bounds.");
+    }
+
+    if (
+      this.standByPosition.x >= this.WarehouseSize.width ||
+      this.standByPosition.y >= this.WarehouseSize.height
+    ) {
+      throw new Error("Standby position is out of bounds.");
+    }
+
+    if (
+      this.exitPosition.x >= this.WarehouseSize.width ||
+      this.exitPosition.y >= this.WarehouseSize.height
+    ) {
+      throw new Error("Exit position is out of bounds.");
+    }
+    
+    return true;
+  }
+
   public testLog() {
     console.log(`RandomProductList - at runCarrier`, this.RandomProductList);
     console.log(`WarehouseSize - at runCarrier`, this.WarehouseSize);
@@ -53,6 +100,12 @@ export class runCarrier {
   }
 
   public getRouteData() {
+    const isValidated = this.validateData();
+    
+    if (!isValidated) {
+      throw new Error("Input validation failed.");
+    }
+
     const routes = this.findPath();
 
     const productRoute = [] as Array<{
@@ -106,6 +159,13 @@ export class runCarrier {
   }
 
   public getInformationValue() {
+
+    const isValidated = this.validateData();
+    
+    if (!isValidated) {
+      throw new Error("Input validation failed.");
+    }
+
     const routes = this.findPath();
 
     const routeData = this.getRouteData();
@@ -130,8 +190,13 @@ export class runCarrier {
             productsValue.forEach((product) => {
                 if (product.productName == route.productName) {
                     product.pickAmount += 1;
-                    product.pickAmount += productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;
-                    product.totalValue += productListData.find((item) => item.itemName == route.productName)?.price || 0;
+
+                    const pricePerUnit = productListData.find((item) => item.itemName == route.productName)?.price || 0;
+                    const eachPickUpAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;
+                    const eachPickUpValue = pricePerUnit * eachPickUpAmount;
+
+                    product.pickAmount += eachPickUpAmount;
+                    product.totalValue += eachPickUpValue;
 
                     const movementSpeed = productRate.find((item) => item.itemName == route.productName)?.tileSpeed || 0;
                     const additionalSteps = routeData.productRoute.reduce((acc, cmm) => {
@@ -157,10 +222,15 @@ export class runCarrier {
             const timeUsed = totalStep * movementSpeed;
             const pickAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0
 
+            const pricePerUnit = productListData.find((item) => item.itemName == route.productName)?.price || 0;
+            const eachPickUpAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;
+
+            const eachPickUpValue = pricePerUnit * eachPickUpAmount;
+
             const eachProductObject = {
                 productName: route.productName,
                 pickAmount: pickAmount,
-                totalValue: productListData.find((item) => item.itemName == route.productName)?.price || 0,
+                totalValue: eachPickUpValue,
                 timeUsed: timeUsed,
                 timePerUnit: pickAmount > 0 ? timeUsed / pickAmount : 0,
             };
