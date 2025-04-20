@@ -1,7 +1,5 @@
 # CargoWIDT
-
 #### Video Demo: https://youtu.be/q7BAyEo_ofg
-
 #### Description:
 CargoWIDT project build on VITE a build tool and use typescript, CSS, TailWind to use CSS easier and HTML. by default we just use 1 div with id root to start writing DOM like to create other pages, component by TypeScript XML that make me can write HTML directly in my typescript code
 
