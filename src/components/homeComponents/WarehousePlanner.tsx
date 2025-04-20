@@ -7,7 +7,7 @@ import { useWarehouse } from "@/contexts/WarehouseContext";
 type PlacementMode = "item" | "exit" | "standby" | null;
 
 export default function WarehousePlanner() {
-  const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 }); // default grid size
+  const [gridSize, _setGridSize] = useState<GridSize>({ width: 10, height: 10 }); // default grid size
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [items, setItems] = useState<Item[]>([]);
 

@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "../ui/table";
 import { Position } from "@/types";
-import { ArrowRight } from "lucide-react";
 import ShowPath from "./ShowPath";
 
 interface RouteData {
