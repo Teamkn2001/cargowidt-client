@@ -7,7 +7,6 @@ import { useWarehouse } from "@/contexts/WarehouseContext";
 type PlacementMode = "item" | "exit" | "standby" | null;
 
 export default function WarehousePlanner() {
-  const [tileSize, setTileSize] = useState<number>(1);
   const [gridSize, setGridSize] = useState<GridSize>({ width: 10, height: 10 }); // default grid size
   const [selectedProduct, setSelectedProduct] = useState<string>("");
   const [items, setItems] = useState<Item[]>([]);
@@ -100,7 +99,7 @@ export default function WarehousePlanner() {
 
   const handleDeleteItem = (itemId: number, e: React.MouseEvent): void => {
     e.stopPropagation();
-    console.log("delete item clicked on item =", itemId);
+    // console.log("delete item clicked on item =", itemId);
     setItems(items.filter((item) => item.id !== itemId)); // remove item from items array (filter what is not the Id)
     if (selectedItem?.id === itemId) {
       setSelectedItem(null);
@@ -110,7 +109,7 @@ export default function WarehousePlanner() {
   useEffect(() => {
     setWarehouseSize(gridSize); // update warehouse size in context
     setItemInWarehouse(items); // update items in context
-  }, [gridSize, tileSize, items]);
+  }, [gridSize, items]);
 
   useEffect(() => {
     // Set the first product as selected product when list loads or changes
@@ -124,19 +123,6 @@ export default function WarehousePlanner() {
       <div className="flex flex-col items-center gap-5 p-4 mb-4 ">
         <div>
           <Warehouse />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">
-            Tile Size (meters)
-          </label>
-          <input
-            type="number"
-            value={tileSize}
-            onChange={(e) => setTileSize(Number(e.target.value))}
-            className="border rounded p-1"
-            min="0.1"
-            step="0.1"
-          />
         </div>
 
         <div className="flex flex-col lg:flex-row w-full gap-2  lg:items-center">
@@ -168,21 +154,21 @@ export default function WarehousePlanner() {
         <div className="flex gap-2 lg:gap-6">
           <div>
             <Button
-              onClick={() => setPlacementMode("exit")}
-              disabled={placementMode === "exit"}
-              className={placementMode === "exit" ? "active" : ""}
-            >
-              Place Exit Position
-            </Button>
-          </div>
-
-          <div>
-            <Button
               onClick={() => setPlacementMode("standby")}
               disabled={placementMode === "standby"}
               className={placementMode === "standby" ? "active" : ""}
             >
               Place Standby Position
+            </Button>
+          </div>
+
+          <div>
+            <Button
+              onClick={() => setPlacementMode("exit")}
+              disabled={placementMode === "exit"}
+              className={placementMode === "exit" ? "active" : ""}
+            >
+              Place Exit Position
             </Button>
           </div>
         </div>
@@ -194,11 +180,11 @@ export default function WarehousePlanner() {
 
       {/* this is main grid */}
       <div
-        className="relative w-full bg-pink-300" //make square container size 600 px
+        className="relative w-full" //make square container size 600 px
         style={{ aspectRatio: "1/1", maxWidth: "600px" }}
       >
         <div
-          className="grid absolute inset-0 border border-gray-300  bg-green-300" // fill square container with grid
+          className="grid absolute inset-0 border border-gray-400 bg-gray-100 " // fill square container with grid
           style={{
             gridTemplateColumns: `repeat(${gridSize.width}, 1fr)`, // 1fr = each cell takes equal space
             gridTemplateRows: `repeat(${gridSize.height}, 1fr)`,
@@ -208,7 +194,7 @@ export default function WarehousePlanner() {
           {Array.from({ length: gridSize.height * gridSize.width }).map(
             (_, index) => {
               const x = index % gridSize.width; // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 = 0-9 by width
-              const y = Math.floor(index / gridSize.width); // = 0 - 9 by hight
+              const y = Math.floor(index / gridSize.width); // = 0 - 9 by hight index 25/10 = y = 2
               return (
                 <div
                   key={`${x}-${y}`}
@@ -216,7 +202,6 @@ export default function WarehousePlanner() {
                   onClick={() => handleTileClick(x, y)}
                 >
                   <div className="absolute inset-0 flex items-center justify-center text-xs text-gray-400">
-                    {/* <Grid className="w-4 h-4" /> */}
                     <div className="text-lg">
                       {x},{y}
                     </div>
@@ -227,6 +212,7 @@ export default function WarehousePlanner() {
           )}
         </div>
 
+        {/* map item to grid */}
         <div
           className="absolute inset-0 grid pointer-events-none"
           style={{
@@ -274,7 +260,6 @@ export default function WarehousePlanner() {
                 gridRow: `${state.exitPosition.y + 1} / span 1`,
                 pointerEvents: "auto",
               }}
-              // onClick={() => handleSpecialPositionClick('exit')}
             >
               <div className="flex items-center justify-center h-full">
                 <Goal className="w-6 h-6 text-red-600" />
@@ -294,7 +279,6 @@ export default function WarehousePlanner() {
                 gridRow: `${state.standByPosition.y + 1} / span 1`,
                 pointerEvents: "auto",
               }}
-              // onClick={() => handleSpecialPositionClick('standby')}
             >
               <div className="flex items-center justify-center h-full">
                 <PersonStanding className="w-6 h-6 text-blue-600" />

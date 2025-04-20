@@ -39,10 +39,10 @@ export default function Header() {
           About
         </Link>
         <Link
-          to="/reference"
+          to="/mechanism"
           className="transition-colors hover:text-blue-100"
         >
-          Reference
+          Mechanism
         </Link>
       </nav>
       {/*  Backdrop overlay */}
@@ -58,7 +58,7 @@ export default function Header() {
     <nav className="hidden lg:flex justify-center items-center gap-12 p-4 h-18 bg-primary text-white">
       <Link to="/">Home</Link>
       <Link to="/about">About</Link>
-      <Link to="/reference">Reference</Link>
+      <Link to="/mechanism">Mechanism</Link>
     </nav>
   </header>
   );

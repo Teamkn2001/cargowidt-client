@@ -33,17 +33,10 @@ export default function DataInput() {
     {
       itemName: "INV001",
       weight: 1,
-      pickingAmount: 3,
+      pickingAmount: 1,
       amount: 100,
       price: 15,
-    },
-    {
-      itemName: "INV002",
-      weight: 1,
-      pickingAmount: 7,
-      amount: 100,
-      price: 15,
-    },
+    }
   ]);
 
   const [newItem, setNewItem] = useState<NewItemData>({

@@ -80,9 +80,9 @@ export function WarehouseProvider({ children }: { children: ReactNode }) {
   const [standByPosition, setStandByPosition] = useState<Position | null>(null);
   const [exitPosition, setExitPosition] = useState<Position | null>(null);
 
-//   console.log(`itemInWarehouse - at context`, itemInWarehouse);
-//   console.log(`productList - at context`, productList);
-//   console.log(`itemPickRate - at context`, itemPickRate);
+  // console.log(`itemInWarehouse - at context`, itemInWarehouse);
+  // console.log(`productList - at context`, productList);
+  // console.log(`itemPickRate - at context`, itemPickRate);
 //   console.log(`stand by and exit - at context`, standByPosition, exitPosition);
 
   // Combine all state into a single object

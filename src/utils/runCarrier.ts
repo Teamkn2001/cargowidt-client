@@ -167,12 +167,9 @@ export class runCarrier {
     }
 
     const routes = this.findPath();
-
-    const routeData = this.getRouteData();
-
-    const productListData = this.productList
-    const productRate = this.itemPickRate
-
+    const productListData = this.productList 
+    const productRate = this.itemPickRate // tile speed and pickingRate
+    
     const productsValue = [] as Array<{
       productName: string;
       pickAmount: number;
@@ -190,39 +187,28 @@ export class runCarrier {
             productsValue.forEach((product) => {
                 if (product.productName == route.productName) {
 
-                    const pricePerUnit = productListData.find((item) => item.itemName == route.productName)?.price || 0;
-                    const eachPickUpAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;
+                    const pricePerUnit = Number(productListData.find((item) => item.itemName == route.productName)?.price || 0);
+                    const eachPickUpAmount = Number(productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0);
                     const eachPickUpValue = pricePerUnit * eachPickUpAmount;
 
                     product.pickAmount += eachPickUpAmount;
                     product.totalValue += eachPickUpValue;
 
                     const movementSpeed = productRate.find((item) => item.itemName == route.productName)?.tileSpeed || 0;
-                    const additionalSteps = routeData.productRoute.reduce((acc, cmm) => {
-                        if (cmm.productName == route.productName) {
-                            return acc + cmm.toItemCount + cmm.toExitCount + cmm.toStandByCount;
-                        }
-                        return acc;
-                    }, 0);
-
+                    const additionalSteps = (route.paths.toItem?.length || 0) + (route.paths.toExit?.length || 0) + (route.paths.toStandBy?.length || 0) - 3; 
                     product.timeUsed += additionalSteps * movementSpeed;
                     product.timePerUnit = product.timeUsed / product.pickAmount;
                 }
               })
         } else {
             const movementSpeed = productRate.find((item) => item.itemName == route.productName)?.tileSpeed || 0;
-            const totalStep = routeData.productRoute.reduce((acc, cmm) => {
-                if (cmm.productName == route.productName) {
-                   
-                    return acc + cmm.toItemCount + cmm.toExitCount + cmm.toStandByCount;
-                }
-                return acc;
-            }, 0);
+            
+            const totalStep = (route.paths.toItem?.length || 0) + (route.paths.toExit?.length || 0) + (route.paths.toStandBy?.length || 0) - 3; // -1 for first tile each part 
             const timeUsed = totalStep * movementSpeed;
-            const pickAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0
+            const pickAmount = Number(productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0)
 
-            const pricePerUnit = productListData.find((item) => item.itemName == route.productName)?.price || 0;
-            const eachPickUpAmount = productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0;
+            const pricePerUnit = Number(productListData.find((item) => item.itemName == route.productName)?.price || 0);
+            const eachPickUpAmount = Number(productListData.find((item) => item.itemName == route.productName)?.pickingAmount || 0);
 
             const eachPickUpValue = pricePerUnit * eachPickUpAmount;
 

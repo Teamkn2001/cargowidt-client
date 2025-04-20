@@ -4,10 +4,10 @@ export default function Introduction() {
 
       <div className="my-4">
       <h1 className="font-extrabold text-3xl">This is CargoWIDT</h1>
-      <p>A warehouse planing game style ~</p>
+      <p className="font-light">A warehouse planing simulator style ~</p>
       </div>
 
-      <div className="w-[92%] lg:w-[70%] flex flex-col items-center lg:items-start gap-3 lg:gap-4 mb-4 p-1 lg:p-4 rounded-md bg-sky-100">
+      <div className="w-[92%] lg:w-[70%] flex flex-col items-center lg:items-start gap-3 lg:gap-4 mb-4 p-2 lg:p-4 rounded-md bg-sky-100">
         <h2 className="font-bold lg:text-xl">How to play?</h2>
         <ol className="list-decimal list-inside px-2">
           <li>

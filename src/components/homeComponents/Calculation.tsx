@@ -15,6 +15,7 @@ import {
 } from "../ui/table";
 import { Position } from "@/types";
 import { ArrowRight } from "lucide-react";
+import ShowPath from "./ShowPath";
 
 interface RouteData {
   productName: string;
@@ -56,18 +57,50 @@ export default function Calculation() {
     setPickingNumber(Number(value));
   };
 
+  const isAllItemOnGird = () => {
+    const allItemInProductList = state.productList
+    const allItemInWarehouse = state.itemInWarehouse
+
+    const isInGrid = (currentProduct: string) => {
+      return allItemInWarehouse.some((item) => item.type === currentProduct);
+    }
+
+    const isAllItemExistInGrid = allItemInProductList.every((item) => {
+      const isItemInWarehouse = isInGrid(item.itemName);
+      if (!isItemInWarehouse) {
+        return false;
+      }
+      return true;
+    })
+
+    if (isAllItemExistInGrid) {
+      return true;
+    } else {
+      console.log(`Not all items are in the warehouse !`);
+      return false;
+    }
+  }
+
   const handleSubmitRun = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    setRouteData([]);
+    setValueData([]);
+    setPathList([]);
+    setErrorMessage("");
+
+    const isReady = isAllItemOnGird()
+    console.log(`isReady check`, isReady)
+    if (!isReady) {
+      setErrorMessage("Please make sure all items are in the warehouse.");
+      return;
+    }
 
     const randomPickGenerator = new RandomPickGenerator(
       state.itemPickRate,
       pickingNumber
     );
     const randomItems = randomPickGenerator.generateRandomPick();
-
-    setRouteData([]);
-    setValueData([]);
-    setErrorMessage("");
 
     try {
       const Carrier = new runCarrier(
@@ -95,8 +128,6 @@ export default function Calculation() {
       );
 
       setPathList(uniquePathData);
-      console.log("uniquePathData", uniquePathData);
-
       setRouteData(uniqueRouteData);
       setValueData(valueData);
     } catch (error) {
@@ -108,7 +139,7 @@ export default function Calculation() {
   };
 
   return (
-    <div className="flex flex-col items-center mx-2 lg:mx-0">
+    <div className="flex flex-col items-center mx-2 mb-4 lg:mx-0">
       <form
         onSubmit={(e) => handleSubmitRun(e)}
         className="flex flex-col lg:flex-row items-center gap-5 p-4 mb-4"
@@ -123,25 +154,26 @@ export default function Calculation() {
       </form>
 
       {errorMessage && (
-        <div>
+        <div className="mb-4">
           <h1 className="font-bold lg:text-2xl text-red-500">
             {" "}
-            ! {errorMessage}
+            {errorMessage}
           </h1>
         </div>
       )}
 
       {routeData.length > 0 && (
         <div className="mb-4 lg:mb-8">
-          <h1 className="font-bold text-center lg:text-xl">Tile usage</h1>
+          <h1 className="font-bold text-center lg:text-xl">Tile Usage</h1>
           <Table>
             <TableCaption>Routes Data(tile usage)</TableCaption>
             <TableHeader>
               <TableRow>
                 <TableHead>Product</TableHead>
-                <TableHead>pick Item</TableHead>
-                <TableHead>item exit</TableHead>
-                <TableHead>back stand</TableHead>
+                <TableHead>Pick Item</TableHead>
+                <TableHead>Item exit</TableHead>
+                <TableHead>Back stand</TableHead>
+                <TableHead>Total Step</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -157,6 +189,11 @@ export default function Calculation() {
                   </TableCell>
                   <TableCell className="text-center">
                     {item.toStandByCount}
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {item.toItemCount +
+                      item.toExitCount +
+                      item.toStandByCount}
                   </TableCell>
                 </TableRow>
               ))}
@@ -174,9 +211,9 @@ export default function Calculation() {
               <TableRow>
                 <TableHead>Product</TableHead>
                 <TableHead>Amount</TableHead>
-                <TableHead>time/unit</TableHead>
-                <TableHead>total time</TableHead>
-                <TableHead>total value</TableHead>
+                <TableHead>Time/Unit</TableHead>
+                <TableHead>Total time</TableHead>
+                <TableHead>Total value</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -217,60 +254,26 @@ export default function Calculation() {
             <div className="w-full lg:w-[70%] flex flex-col items-center lg:items-start gap-3 lg:gap-5 mb-4 p-1 lg:p-4 rounded-md bg-gray-200" key={index}>
               <h1 className="font-semibold">{productPath.productName}</h1>
 
-              <h1>Path to Item</h1>
+              <h1>Pick item(s)</h1>
 
               {toItemPath && toItemPath.length > 0 ? (
-                <div className="w-full flex items-center overflow-scroll hide-scrollbar bg-white p-2">
-                  {toItemPath.map((item, positionIndex) => (
-                    <div key={`${index}-${positionIndex}`} className=" flex items-center">
-                      <p className="whitespace-nowrap">
-                        ({item.x}, {item.y})
-                      </p>
-
-                      {positionIndex < toItemPath.length - 1 && (
-                        <ArrowRight className="w-4 h-4" />
-                      )}
-                    </div>
-                  ))}
-                </div>
+               <ShowPath path={toItemPath} index={index} />
               ) : (
                 <p>No path to item</p>
               )}
 
-                <h1>Path to Exit</h1>
+                <h1>move to Exit</h1>
 
               {toExitPath &&toExitPath.length > 0 ? (
-                  <div className="w-full flex items-center overflow-scroll hide-scrollbar bg-white p-2">
-                    {toExitPath.map((item, positionIndex) => (
-                      <div key={`${index}-${positionIndex}`} className="flex items-center ">
-                        <p className="whitespace-nowrap">({item.x}, {item.y}) </p>
-
-                     {positionIndex < toExitPath.length - 1 && (
-                              <ArrowRight className="w-4 h-4" />
-                     )}
-                        
-                      </div>
-                    ))}
-                  </div>
+                  <ShowPath path={toExitPath} index={index} />
                 ) : (
                     <p>No path to exit</p>
                 )}
 
-                <h1>Path to Stand by</h1>
+                <h1>back to Stand by</h1>
 
               {toStandByPath && toStandByPath.length > 0 ? (
-                  <div className="w-full flex items-center overflow-scroll hide-scrollbar bg-white p-2">
-                    {toStandByPath.map((item, positionIndex) => (
-                      <div key={`${index}-${positionIndex}`} className="flex items-center">
-                        <p className="whitespace-nowrap">({item.x}, {item.y}) </p>
-
-                     {positionIndex < toStandByPath.length - 1 && (
-                              <ArrowRight className="w-4 h-4" />
-                     )}
-                        
-                      </div>
-                    ))}
-                  </div>
+                   <ShowPath path={toStandByPath} index={index} />
                 ) : (
                     <p>No path to stand by</p>
                 )}
